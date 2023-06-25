@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Application</title>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', path='/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input">
+        <input
+          type="text"
+          id="message-input"
+          placeholder="Type your message..."
+        />
+        <button id="send-button">Send</button>
+      </div>
+      <input id="userid" type="text" />
+      <button id="userid-btn">change id</button>
+    </div>
+
+    <script>
+      let userid = 1;
+      let websocket = new WebSocket(
+        `ws://${window.location.host}/ws/${userid}`
+      );
+
+      const useridBtn = document.getElementById("userid-btn");
+      useridBtn.addEventListener("click", () => {
+        const useridBox = document.getElementById("userid");
+        userid = useridBox.value;
+        console.log(useridBox.value);
+        websocket = new WebSocket(`ws://${window.location.host}/ws/${userid}`);
+        console.log(`ws://${window.location.host}/ws/${userid}`);
+      });
+
+      // WebSocket connection
+      // const websocket = new WebSocket(
+      //   `ws://${window.location.host}/ws/${userid}`
+      // );
+
+      // DOM elements
+      const messageInput = document.getElementById("message-input");
+      const sendButton = document.getElementById("send-button");
+      const chatMessages = document.getElementById("chat-messages");
+
+      // Send button click event listener
+      sendButton.addEventListener("click", () => {
+        const message = messageInput.value.trim();
+        if (message) {
+          websocket.send(message);
+          messageInput.value = "";
+        }
+      });
+
+      // Handle incoming messages from the server
+      websocket.onmessage = (event) => {
+        const message = event.data;
+        const messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        chatMessages.appendChild(messageElement);
+      };
+    </script>
+  </body>
+</html>
